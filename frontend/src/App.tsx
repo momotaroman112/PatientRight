@@ -322,6 +322,7 @@ export default function MiniDrawer() {
               <Routes>
                 <Route path="/PatientRight" element={<Patientright/>} />
                 <Route path="/CreatePatientRight" element={<CreatePatientRight />} />
+                <Route path="/CreatePatientRight/:id" element={<CreatePatientRight />} />
               </Routes>
             </div>
           </main>

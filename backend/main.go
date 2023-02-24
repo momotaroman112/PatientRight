@@ -43,9 +43,8 @@ func main() {
 			protected.GET("/patientrights", controller.ListPatientRights)
 			protected.GET("/patientright/:id", controller.GetPatientRights)
 			protected.POST("/patientrights", controller.CreatePatientrights)
-			protected.PATCH("/patientrights", controller.UpdatePatientRights)
+			protected.PATCH("/patientrights/:id", controller.UpdatePatientRights)
 			protected.DELETE("/patientrights/:id", controller.DeletePatientRights)
-
 
 			// gender Routes
 			protected.GET("/genders", controller.ListGenders)
@@ -58,7 +57,6 @@ func main() {
 			// hospital Routes
 			protected.GET("/hospitals", controller.ListHospital)
 			protected.GET("/hospital/:id", controller.GetHospital)
-			
 
 		}
 	}

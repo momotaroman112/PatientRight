@@ -1,5 +1,5 @@
 import React from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
@@ -11,7 +11,7 @@ import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import Divider from "@material-ui/core/Divider";
-import Snackbar from '@material-ui/core/Snackbar';
+import Snackbar from "@material-ui/core/Snackbar";
 import Select from "@material-ui/core/Select";
 import { FormControl } from "@material-ui/core";
 import { AlertTitle } from "@material-ui/lab";
@@ -20,47 +20,50 @@ import { HospitalInterface } from "../models/IHospital";
 import { PatientInterface } from "../models/IPatient";
 import { RightTypeInterface } from "../models/IRighttype";
 import { PatientRightInterface } from "../models/IPatientRight";
-import { MuiPickersUtilsProvider,KeyboardDateTimePicker,} from "@material-ui/pickers";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDateTimePicker,
+} from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 
 const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            flexGrow: 1,
-        },
-        container: {
-            marginTop: theme.spacing(2),
-        },
-        paper: {
-            padding: theme.spacing(2),
-            color: theme.palette.text.secondary,
-        },
-        text: {
-            color: "#000000",
-            fontSize: "1rem",
-        }
-
-    })
+  createStyles({
+    root: {
+      flexGrow: 1,
+    },
+    container: {
+      marginTop: theme.spacing(2),
+    },
+    paper: {
+      padding: theme.spacing(2),
+      color: theme.palette.text.secondary,
+    },
+    text: {
+      color: "#000000",
+      fontSize: "1rem",
+    },
+  })
 );
 
 const Alert = (props: AlertProps) => {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
 
 function CreatePatientRight() {
-
+  const params = useParams();
   const classes = useStyles();
-  const [SendingTime, setSendingTime] = React.useState<Date | null>(new Date(),);
+  const [SendingTime, setSendingTime] = React.useState<Date | null>(new Date());
   const [hospital, setHospital] = useState<HospitalInterface[]>([]);
-  const [patients, setPatients] = useState<PatientInterface[]>([]); 
+  const [patients, setPatients] = useState<PatientInterface[]>([]);
   const [righttype, setRightType] = useState<RightTypeInterface[]>([]);
-  const [patientright, setPatientRight] = useState<Partial<PatientRightInterface>>({});
+  const [patientright, setPatientRight] = useState<
+    Partial<PatientRightInterface>
+  >({});
   const [nurse, setNurse] = useState<EmployeeInterface>();
   const [errorMessage, setErrorMessage] = useState("");
 
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-
 
   const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
     if (reason === "clickaway") {
@@ -75,7 +78,6 @@ function CreatePatientRight() {
   ) => {
     const name = event.target.name as keyof typeof patientright;
     setPatientRight({
-
       ...patientright,
       [name]: event.target.value,
     });
@@ -87,26 +89,25 @@ function CreatePatientRight() {
   };
 
   const handleInputChange = (
-
     event: React.ChangeEvent<{ id?: string; value: any }>
-
   ) => {
-
     const id = event.target.id as keyof typeof patientright;
 
     const { value } = event.target;
 
     setPatientRight({ ...patientright, [id]: value });
-
   };
 
   //Get Data
   const apiUrl = "http://localhost:8080";
   const requestOptions = {
-      method: "GET",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json" },
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
   };
-  
+
   const getHospital = async () => {
     fetch(`${apiUrl}/hospitals`, requestOptions)
       .then((response) => response.json())
@@ -135,7 +136,7 @@ function CreatePatientRight() {
     fetch(`${apiUrl}/patients`, requestOptions)
       .then((response) => response.json())
       .then((res) => {
-        console.log(res)
+        console.log(res);
         if (res.data) {
           setPatients(res.data);
         } else {
@@ -143,15 +144,15 @@ function CreatePatientRight() {
         }
       });
   };
-  console.log("Patient",nurse);
-  
+  console.log("Patient", nurse);
+
   const getNurse = async () => {
     let uid = localStorage.getItem("uid");
     fetch(`${apiUrl}/employee/${uid}`, requestOptions)
       .then((response) => response.json())
       .then((res) => {
         if (res.data) {
-          console.log(res.data)
+          console.log(res.data);
           setNurse(res.data);
         } else {
           console.log("else");
@@ -160,7 +161,33 @@ function CreatePatientRight() {
   };
   console.log("Nurse", nurse);
 
+  const getPatientRightById = async (id: string) => {
+    fetch(`${apiUrl}/patientright/${id}`, requestOptions)
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.data) {
+          console.log(res.data);
+          setPatientRight({
+            PatientID: res.data.PatientID,
+            ID: res.data.ID,
+            Name: res.data.Name,
+            RightTypeID: res.data.RightTypeID,
+            HospitalID: res.data.HospitalID,
+            EmployeeID: res.data.EmployeeID,
+            Discount: res.data.Discount,
+            Note: res.data.Note,
+          });
+        } else {
+          console.log("error");
+        }
+      });
+  };
+
   useEffect(() => {
+    if (params.id) {
+      getPatientRightById(params.id);
+    }
+
     getRightType();
     getPatient();
     getNurse();
@@ -174,62 +201,88 @@ function CreatePatientRight() {
   };
 
   function submit() {
-    if(patientright.PatientID == 0){
+    if (patientright.PatientID == 0) {
       setError(true);
-      setErrorMessage("กรุณาเลือกคนไข้")
-    }
-    else if (patientright.RightTypeID == 0){
+      setErrorMessage("กรุณาเลือกคนไข้");
+    } else if (patientright.RightTypeID == 0) {
       setError(true);
-      setErrorMessage("กรุณาเลือกสิทธิของผู้ป่วย")
-    }
-    else if (patientright.HospitalID == 0){
+      setErrorMessage("กรุณาเลือกสิทธิของผู้ป่วย");
+    } else if (patientright.HospitalID == 0) {
       setError(true);
-      setErrorMessage("กรุณาเลือกโรงพยาบาลที่ใช้สิทธิ")
-    }else{
-      setError(false)
+      setErrorMessage("กรุณาเลือกโรงพยาบาลที่ใช้สิทธิ");
+    } else {
+      setError(false);
       let data = {
-      PatientID: convertType(patientright.PatientID),
-      EmployeeID : convertType(nurse?.ID),
-      RightTypeID: convertType(patientright.RightTypeID),
-      HospitalID: convertType(patientright.HospitalID),
-      DateRocrcord: SendingTime,
-      Note: patientright.Note ?? "",
+        PatientID: convertType(patientright.PatientID),
+        EmployeeID: convertType(nurse?.ID),
+        RightTypeID: convertType(patientright.RightTypeID),
+        HospitalID: convertType(patientright.HospitalID),
+        DateRocrcord: SendingTime,
+        Note: patientright.Note ?? "",
       };
-      console.log(data)
-      const requestOptionsPost = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
+      console.log(data);
+      
+      if (params.id) {
+        const requestOptionsPost = {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        };
 
-    fetch(`${apiUrl}/patientrights`, requestOptionsPost)
-      .then((response) => response.json())
-      .then((res) => {
-        console.log(res.data);
-        if (res.data) {
-          setSuccess(true);
-          setErrorMessage("");
-          ClearForm();
-        } else {
-          console.log("ไม่มามารถบันทึกได้")
-          setError(true);
-          if(res.error.includes("Note cannot be blank")){
-            setErrorMessage("กรุณากรอกหมายเหตุการใช้สิทธิ")
-          }
-          else if(res.error.includes("Time must be Now")){
-            setErrorMessage("กรุณาเลือกเวลาที่เป็นปัจจุบัน")
-          }
-          else{
-            setErrorMessage(res.error);
-          }
-        }
-      });
+        fetch(`${apiUrl}/patientrights/${params.id}`, requestOptionsPost)
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data) {
+              setSuccess(true);
+              setErrorMessage("");
+              // ClearForm();
+            } else {
+              console.log("ไม่มามารถบันทึกได้");
+              setError(true);
+              if (res.error.includes("Note cannot be blank")) {
+                setErrorMessage("กรุณากรอกหมายเหตุการใช้สิทธิ");
+              } else if (res.error.includes("Time must be Now")) {
+                setErrorMessage("กรุณาเลือกเวลาที่เป็นปัจจุบัน");
+              } else {
+                setErrorMessage(res.error);
+              }
+            }
+          });
+      } else {
+        const requestOptionsPost = {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        };
+
+        fetch(`${apiUrl}/patientrights`, requestOptionsPost)
+          .then((response) => response.json())
+          .then((res) => {
+            console.log(res.data);
+            if (res.data) {
+              setSuccess(true);
+              setErrorMessage("");
+              ClearForm();
+            } else {
+              console.log("ไม่มามารถบันทึกได้");
+              setError(true);
+              if (res.error.includes("Note cannot be blank")) {
+                setErrorMessage("กรุณากรอกหมายเหตุการใช้สิทธิ");
+              } else if (res.error.includes("Time must be Now")) {
+                setErrorMessage("กรุณาเลือกเวลาที่เป็นปัจจุบัน");
+              } else {
+                setErrorMessage(res.error);
+              }
+            }
+          });
+      }
     }
-
-    
   }
 
   // function clear form after submit success
@@ -245,8 +298,7 @@ function CreatePatientRight() {
   };
 
   return (
-
-    <Container className={classes.container} maxWidth="md" >
+    <Container className={classes.container} maxWidth="md">
       <Snackbar open={success} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success">
           บันทึกข้อมูลสำเร็จ
@@ -261,26 +313,15 @@ function CreatePatientRight() {
       </Snackbar>
 
       <Paper className={classes.paper}>
-        <Box display="flex" >
-          <Box flexGrow={1}>
+        <Typography component="h2" variant="h6" color="primary" gutterBottom>
+          บันทึกสิทธิการรักษาผู้ป่วย
+        </Typography>
 
-            <Typography
-              component="h2"
-              variant="h6"
-              color="primary"
-              gutterBottom
-              
-            >
-               บันทึกสิทธิการรักษาผู้ป่วย
-            </Typography>
-          </Box>
-        </Box>
         <Divider />
         <Grid container spacing={3} className={classes.root}>
-          
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>คนไข้</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>คนไข้</p>
               <Select
                 native
                 value={patientright.PatientID}
@@ -288,6 +329,7 @@ function CreatePatientRight() {
                 inputProps={{
                   name: "PatientID",
                 }}
+                disabled={params.id ? true : false}
               >
                 <option aria-label="None" value="">
                   กรุณาเลือกคนไข้
@@ -302,7 +344,9 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>เลือกประเภทสิทธิของผู้ป่วย</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>
+                เลือกประเภทสิทธิของผู้ป่วย
+              </p>
               <Select
                 native
                 value={patientright.RightTypeID}
@@ -324,7 +368,9 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>เลือกโรงพยาบาลที่ใช้สิทธิ</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>
+                เลือกโรงพยาบาลที่ใช้สิทธิ
+              </p>
               <Select
                 native
                 value={patientright.HospitalID}
@@ -332,7 +378,7 @@ function CreatePatientRight() {
                 inputProps={{
                   name: "HospitalID",
                 }}
-              > 
+              >
                 <option aria-label="None" value="">
                   กรุณาเลือกโรงพยาบาลที่ใช้สิทธิ
                 </option>
@@ -346,7 +392,9 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>วันที่และเวลาที่ทำการบันทึก</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>
+                วันที่และเวลาที่ทำการบันทึก
+              </p>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <KeyboardDateTimePicker
                   name="SendingTime"
@@ -361,7 +409,7 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>หมายเหตุ :</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>หมายเหตุ :</p>
               <TextField
                 id="Note"
                 variant="outlined"
@@ -374,7 +422,7 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>เจ้าหน้าที่</p>
+              <p style={{ color: "#006A7D", fontSize: "10" }}>เจ้าหน้าที่</p>
               <Select
                 native
                 value={patientright.EmployeeID}
@@ -390,25 +438,24 @@ function CreatePatientRight() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={12} >
+          <Grid item xs={12} sm={12}>
             <p></p>
           </Grid>
-          
         </Grid>
       </Paper>
-      <br/>
+      <br />
       <Grid container justifyContent="center" spacing={3}>
         <Grid item xs={3}>
-              <Button
-                style={{ float: "right" }}
-                variant="contained"
-                onClick={submit}
-                color="primary"
-             >
-                บันทึก
-              </Button>
-            </Grid>
+          <Button
+            style={{ float: "right" }}
+            variant="contained"
+            onClick={submit}
+            color="primary"
+          >
+            {params?.id ? "อัพเดท" : "บันทึก"}
+          </Button>
         </Grid>
+      </Grid>
     </Container>
   );
 }

@@ -22,7 +22,6 @@ type Employee struct {
 	RoleID *uint
 	Role   Role `gorm:"references:id"`
 
-
 	//1 Employee มีได้หลาย Bill
 	Bills []Bill `gorm:"foreignKey:EmployeeID"`
 
@@ -41,7 +40,6 @@ type PatientType struct {
 	Patient  []Patient `gorm:"foreignKey:PatientTypeID"`
 }
 
-
 type Patient struct {
 	gorm.Model
 	HN        string    `valid:"matches(^HN\\d{6}$),required~HN cannot be blank"`
@@ -53,7 +51,6 @@ type Patient struct {
 	DateAdmit time.Time
 	Symptom   string
 
-
 	//GenderID ทำหน้าที่เป็น ForeignKey
 	GenderID *uint
 	Gender   Gender `gorm:"references:id" valid:"-"`
@@ -62,47 +59,45 @@ type Patient struct {
 	PatientTypeID *uint
 	PatientType   PatientType `gorm:"references:id" valid:"-"`
 
-	//PatientRightID ทำหน้าที่เป็น ForeignKey
-	PatientRightID *uint
-	PatientRight   PatientRight `gorm:"references:id" valid:"-"`
+	PatientRight []PatientRight `gorm:"foreignKey:PatientID"`
 }
 
 type RightType struct {
 	gorm.Model
-	Typename string
-	Discount int 
-	PatientRight  []PatientRight `gorm:"foreignKey:RightTypeID"`
+	Typename     string
+	Discount     int
+	PatientRight []PatientRight `gorm:"foreignKey:RightTypeID"`
 }
 
-type  Hospital struct {
+type Hospital struct {
 	gorm.Model
-	Name string
-	Local string
+	Name         string
+	Local        string
 	PatientRight []PatientRight `gorm:"foreignKey:HospitalID"`
 }
 
 type PatientRight struct {
 	gorm.Model
-	Name string
+	Name        string
 	RightTypeID *uint
-	RightType RightType `gorm:"references:id"`
+	RightType   RightType `gorm:"references:id"`
 
-	
 	HospitalID *uint
-	Hospital Hospital `gorm:"references:id" valid:"-"`
+	Hospital   Hospital `gorm:"references:id" valid:"-"`
 
 	EmployeeID *uint
-	Employee Employee `gorm:"references:id" valid:"-"`
+	Employee   Employee `gorm:"references:id" valid:"-"`
 
-	Note string 	  `valid:"required~Note cannot be blank"`
-	
-	CreditLimit int16  `valid:"int,range(0|500000)~Credit Limit Invalids"`
+	Note string `valid:"required~Note cannot be blank"`
+
+	CreditLimit int16 `valid:"int,range(0|500000)~Credit Limit Invalids"`
 
 	DateRocrcord time.Time `valid:"present~Time must be Now"`
 
-	Patient []Patient `gorm:"foreignKey:PatientRightID"`
+	//PatientRightID ทำหน้าที่เป็น ForeignKey
+	PatientID *uint
+	Patient   Patient `gorm:"references:id" valid:"-"`
 }
-
 
 type Bill struct {
 	gorm.Model
@@ -119,10 +114,7 @@ type Bill struct {
 
 	EmployeeID *uint
 	Employee   Employee `gorm:"references:id" valid:"-"`
-
 }
-
-
 
 func init() {
 	govalidator.CustomTypeTagMap.Set("past", func(i interface{}, context interface{}) bool {

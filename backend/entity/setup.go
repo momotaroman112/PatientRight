@@ -24,40 +24,39 @@ func SetupDatabase() {
 
 	// Migrate the schema
 	database.AutoMigrate(
-		&Employee{}, 
-		&Gender{}, 
-		&PatientType{}, 
-		&PatientRight{}, 
-		&Patient{},  
-		&Bill{}, 
-		&Hospital{}, 
+		&Employee{},
+		&Gender{},
+		&PatientType{},
+		&PatientRight{},
+		&Patient{},
+		&Bill{},
+		&Hospital{},
 		&PatientType{},
 	)
 	db = database
 
 	//hospital Data
-	Rama 	:=  Hospital{
-		Name: "Rama",
+	Rama := Hospital{
+		Name:  "Rama",
 		Local: "แขวงทุ่งพญาไท เขตราชเทวี กรุงเทพมหานคร 10400",
 	}
 	db.Model(&Hospital{}).Create(&Rama)
-	Krungthap	:=  Hospital{
-		Name: "Krungthap",
+	Krungthap := Hospital{
+		Name:  "Krungthap",
 		Local: "1308, 9 ถ. มิตรภาพ ตำบลในเมือง อำเภอเมืองนครราชสีมา นครราชสีมา 30000",
 	}
 	db.Model(&Hospital{}).Create(&Krungthap)
-	
-	Srinakarin 	:=  Hospital{
-		Name: "Srinakarin",
+
+	Srinakarin := Hospital{
+		Name:  "Srinakarin",
 		Local: "ตำบลในเมือง อำเภอเมืองขอนแก่น ขอนแก่น 40000",
 	}
 	db.Model(&Hospital{}).Create(&Srinakarin)
-	Sirirath	:=  Hospital{
-		Name: "Sirirath",
+	Sirirath := Hospital{
+		Name:  "Sirirath",
 		Local: " 2 ถนน วังหลัง แขวงศิริราช เขตบางกอกน้อย กรุงเทพมหานคร 10700",
 	}
 	db.Model(&Hospital{}).Create(&Sirirath)
-	
 
 	//Role Data
 	doctor := Role{
@@ -105,23 +104,6 @@ func SetupDatabase() {
 	}
 	db.Model(&RightType{}).Create(&Pt5)
 
-	//PatientRight Data
-	Pr1 := PatientRight{
-		RightType:	Pt1,
-		Hospital: Rama,
-		Note: "ติดตามอาการ",
-		CreditLimit: 10000,
-	}
-	db.Model(&PatientRight{}).Create(&Pr1)
-
-	Pr2 := PatientRight{
-		RightType:	Pt2,
-		Hospital: Sirirath,
-		Note: "ติดตามอาการ",
-		CreditLimit: 20000,
-	}
-	db.Model(&PatientRight{}).Create(&Pr2)
-
 	// Gender Data (ข้อมูลเพศ)
 	male := Gender{
 		Identity: "ชาย",
@@ -152,12 +134,14 @@ func SetupDatabase() {
 
 	// Employee Data
 	password, err := bcrypt.GenerateFromPassword([]byte("123456"), 14)
-	db.Model(&Employee{}).Create(&Employee{
+	emp1 := Employee{
 		Name:     "เอมิ ฟูคาดะ",
 		Email:    "ame@email.com",
 		Password: string(password),
 		Role:     nurse,
-	})
+	}
+	db.Model(&Employee{}).Create(&emp1)
+
 	db.Model(&Employee{}).Create(&Employee{
 		Name:     "โซระ ชิน่า",
 		Email:    "sora@email.com",
@@ -203,34 +187,51 @@ func SetupDatabase() {
 
 	//Patient Data
 	P1 := Patient{
-		HN:           "HN000001",
-		Pid:          "1361001338630",
-		FirstName:    "พรีโต",
-		LastName:     "กางเกง",
-		Birthdate:    time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
-		Age:          21,
-		DateAdmit:    time.Now(),
-		Symptom:      "",
-		Gender:       male,
-		PatientType:  t1,
-		PatientRight: Pr1,
+		HN:          "HN000001",
+		Pid:         "1361001338630",
+		FirstName:   "พรีโต",
+		LastName:    "กางเกง",
+		Birthdate:   time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+		Age:         21,
+		DateAdmit:   time.Now(),
+		Symptom:     "",
+		Gender:      male,
+		PatientType: t1,
 	}
 	db.Model(&Patient{}).Create(&P1)
 
 	P2 := Patient{
-		HN:           "HN000002",
-		Pid:          "1000000000001",
-		FirstName:    "ลุงเริง",
-		LastName:     "อินคา",
-		Birthdate:    time.Date(2022, 5, 11, 0, 0, 0, 0, time.UTC),
-		Age:          20,
-		DateAdmit:    time.Date(2002, 5, 11, 0, 0, 0, 0, time.UTC),
-		Symptom:      "",
-		Gender:       female,
-		PatientType:  t1,
-		PatientRight: Pr1,
+		HN:          "HN000002",
+		Pid:         "1000000000001",
+		FirstName:   "ลุงเริง",
+		LastName:    "อินคา",
+		Birthdate:   time.Date(2022, 5, 11, 0, 0, 0, 0, time.UTC),
+		Age:         20,
+		DateAdmit:   time.Date(2002, 5, 11, 0, 0, 0, 0, time.UTC),
+		Symptom:     "",
+		Gender:      female,
+		PatientType: t1,
 	}
 	db.Model(&Patient{}).Create(&P2)
 
+	//PatientRight Data
+	Pr1 := PatientRight{
+		RightType:   Pt1,
+		Hospital:    Rama,
+		Note:        "ติดตามอาการ",
+		CreditLimit: 10000,
+		Patient:     P1,
+		Employee:    emp1,
+	}
+	db.Model(&PatientRight{}).Create(&Pr1)
 
+	Pr2 := PatientRight{
+		RightType:   Pt2,
+		Hospital:    Sirirath,
+		Note:        "ติดตามอาการ",
+		CreditLimit: 20000,
+		Patient:     P2,
+		Employee:    emp1,
+	}
+	db.Model(&PatientRight{}).Create(&Pr2)
 }

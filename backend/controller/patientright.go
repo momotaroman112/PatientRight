@@ -2,6 +2,8 @@ package controller
 
 import (
 	"net/http"
+	"time"
+
 	//"testing/quick"
 
 	"github.com/asaskevich/govalidator"
@@ -16,6 +18,7 @@ func CreatePatientrights(c *gin.Context) {
 	var righttype entity.RightType
 	var hospital entity.Hospital
 	var employee entity.Employee
+	var patient entity.Patient
 
 	// bind เข้าตัวแปร patientright
 	if err := c.ShouldBindJSON(&patientright); err != nil {
@@ -41,6 +44,12 @@ func CreatePatientrights(c *gin.Context) {
 		return
 	}
 
+	// : ค้นหา Patient ด้วย id
+	if tx := entity.DB().Where("id = ?", patientright.PatientID).First(&patient); tx.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "patient not found"})
+		return
+	}
+
 	// : สร้าง patient
 	pt := entity.PatientRight{
 		RightType:    righttype, // โยงความสัมพันธ์กับ Entity PatientType
@@ -48,6 +57,7 @@ func CreatePatientrights(c *gin.Context) {
 		Employee:     employee,
 		DateRocrcord: patientright.DateRocrcord, // ตั่งค่าของ HN ให้เท่ากับค่าที่รับมา
 		Note:         patientright.Note,         // ตั่งค่าของ Note ให้เท่ากับค่าที่รับมา
+		Patient:      patient,
 	}
 
 	// : ขั้นตอนการ validate ข้อมูล
@@ -68,7 +78,7 @@ func CreatePatientrights(c *gin.Context) {
 func GetPatientRights(c *gin.Context) {
 	var patientright entity.PatientRight
 	id := c.Param("id")
-	if err := entity.DB().Raw("SELECT * FROM patient_rights WHERE id = ?", id).Scan(&patientright).Error; err != nil {
+	if err := entity.DB().Preload("Employee").Preload("Hospital").Preload("Patient").Preload("RightType").Raw("SELECT * FROM patient_rights WHERE id = ?", id).Find(&patientright).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -80,13 +90,13 @@ func GetPatientRights(c *gin.Context) {
 func ListPatientRights(c *gin.Context) {
 	var patientrights []entity.PatientRight
 	if err := entity.DB().Raw("SELECT * FROM patient_rights").
-	Preload("PatientRegister").
-	Preload("Employee").
-	Preload("Hospital").
-	Preload("RightType").
-	Find(&patientrights).Error; err != nil {
-	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	return
+		Preload("Patient").
+		Preload("Employee").
+		Preload("Hospital").
+		Preload("RightType").
+		Find(&patientrights).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": patientrights})
@@ -104,8 +114,17 @@ func DeletePatientRights(c *gin.Context) {
 
 // PATCH /patientrights
 func UpdatePatientRights(c *gin.Context) {
-	var updatepatientright entity.PatientRight
-	var patientright entity.PatientRight
+
+	type PatientRightUpdate struct {
+		DateRocrcord time.Time
+		EmployeeID   int
+		HospitalID   int
+		Note         string
+		PatientID    int
+		RightTypeID  int
+	}
+	var id = c.Param("id")
+	var updatepatientright PatientRightUpdate
 	var righttype entity.RightType
 	var hospital entity.Hospital
 	var employee entity.Employee
@@ -149,7 +168,7 @@ func UpdatePatientRights(c *gin.Context) {
 		return
 	}
 
-	if err := entity.DB().Where("id = ?", patientright.ID).Updates(&uppt).Error; err != nil {
+	if err := entity.DB().Where("id = ?", id).Updates(&uppt).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -157,5 +176,5 @@ func UpdatePatientRights(c *gin.Context) {
 	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	// 	return
 	// }
-	c.JSON(http.StatusOK, gin.H{"status": "Updating Success!", "data": patientright})
+	c.JSON(http.StatusOK, gin.H{"data": uppt})
 }

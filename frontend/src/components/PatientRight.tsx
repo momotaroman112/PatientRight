@@ -13,21 +13,26 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { PatientRightInterface } from "../models/IPatientRight";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
 function PatientRights() {
-
   const [success, setSuccess] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
     if (reason === "clickaway") {
       return;
     }
@@ -37,9 +42,10 @@ function PatientRights() {
 
   // ประกาศตัวแปร users และ setUsers สำหรับเก็บค่าจาก UsersInterface
   // setUsers เป็นตัว set ค่าจาก UsersInterface เข้าไปที่ตัวแปร users
-  const [patientrights, setPatientRights] = React.useState<PatientRightInterface[]>([]);
+  const [patientrights, setPatientRights] = React.useState<
+    PatientRightInterface[]
+  >([]);
   const [open, setOpen] = React.useState<boolean[]>([]);
-  
 
   const getPatientRights = async () => {
     const apiUrl = "http://localhost:8080/patientrights";
@@ -47,7 +53,7 @@ function PatientRights() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`    // login เพื่อเอาข้อมูลให้หลังบ้าน check เป็นการระบุตัวตน
+        Authorization: `Bearer ${localStorage.getItem("token")}`, // login เพื่อเอาข้อมูลให้หลังบ้าน check เป็นการระบุตัวตน
       },
     };
 
@@ -59,9 +65,8 @@ function PatientRights() {
         if (res.data) {
           setPatientRights(res.data);
           console.log(res.Data);
-        }
-        else {
-          console.log(res.error);  // ข้อมูลไม่ถูกต้อง จะแสดงค่า error ที่ console เช่น token หรือ ข้อมูลไม่ถูกต้อง ก็จะแสดงค่าของข้อมูลตัวนั้น
+        } else {
+          console.log(res.error); // ข้อมูลไม่ถูกต้อง จะแสดงค่า error ที่ console เช่น token หรือ ข้อมูลไม่ถูกต้อง ก็จะแสดงค่าของข้อมูลตัวนั้น
         }
       });
 
@@ -74,7 +79,7 @@ function PatientRights() {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     };
 
@@ -87,22 +92,21 @@ function PatientRights() {
           setMessage("Delete Success");
 
           console.log(res.data);
-        }
-        else {
+        } else {
           setError(true);
           setMessage("Delete Error");
           console.log(res.error);
         }
       });
-    
+
     // await getHistorySheets();
     window.location.reload();
     handleCloseDialog(id);
-  }
+  };
 
   const checkOpen = (id: number): boolean => {
     return open[id] ? open[id] : false;
-  }
+  };
 
   const handleOpen = (id: number) => {
     let openArr = [...open];
@@ -121,44 +125,89 @@ function PatientRights() {
       field: "Actions",
       // type: "action",
       // width: 100,
-      headerName : "Action",
+      headerName: "Action",
       sortable: false,
       renderCell: (params) => {
         return (
           <React.Fragment>
-            <IconButton size="small" component={RouterLink} to={`/patientrightcreate/${params.row.ID}`}>
+            <IconButton
+              size="small"
+              component={RouterLink}
+              to={`/CreatePatientRight/${params.row.ID}`}
+            >
               <EditIcon color="success" fontSize="small"></EditIcon>
             </IconButton>
             <IconButton size="small" onClick={() => handleOpen(params.row.ID)}>
               <DeleteIcon color="error" fontSize="small"></DeleteIcon>
             </IconButton>
-            <Dialog open={checkOpen(params.row.ID)} onClose={() => handleCloseDialog(params.row.ID)}>
+            <Dialog
+              open={checkOpen(params.row.ID)}
+              onClose={() => handleCloseDialog(params.row.ID)}
+            >
               <DialogTitle>ยืนยันลบข้อมูล</DialogTitle>
-              <DialogContent>คุณต้องการลบข้อมูลสิทธิผู้ป่วย '{ params.row.Patient.FirstName + " " + params.row.Patient.LastName }' (ID: { params.row.ID }) ใช่ไหม?</DialogContent>
+              <DialogContent>
+                คุณต้องการลบข้อมูลสิทธิผู้ป่วย '
+                {params.row.Patient.FirstName +
+                  " " +
+                  params.row.Patient.LastName}
+                ' (ID: {params.row.ID}) ใช่ไหม?
+              </DialogContent>
               <DialogActions>
-                <Button onClick={() => handleCloseDialog(params.row.ID)}>ยกเลิก</Button>
-                <Button onClick={() => deletePatientRight(params.row.ID)}>ตกลง</Button>
+                <Button onClick={() => handleCloseDialog(params.row.ID)}>
+                  ยกเลิก
+                </Button>
+                <Button onClick={() => deletePatientRight(params.row.ID)}>
+                  ตกลง
+                </Button>
               </DialogActions>
             </Dialog>
           </React.Fragment>
-        )
-      }
+        );
+      },
     },
-    { field: "ID", headerName: "ID", width: 96, },
-    { field: "FirstName", headerName: "Patient", width: 96, valueGetter: (params) => { return params.row.Patient.FirstName + " " + params.row.Patient.LastName } },
-    { field: "RightType", headerName: "สิทธิผู้ป่วย", width: 96 ,valueGetter: (params) => { return params.row.RightType.Typename}},
-    { field: "Hospital", headerName: "โรงพยาบาล", width: 96 ,valueGetter: (params) => { return params.row.Hospital.Name}},
-    { field: "Time", headerName: "เวลาบันทึกข้อมูล", width: 96 ,valueFormatter: function (params) {return moment(params.value).format('D MMM YYYY');}, },
+    { field: "ID", headerName: "ID", width: 96 },
+    {
+      field: "FirstName",
+      headerName: "Patient",
+      width: 96,
+      valueGetter: (params) => {
+        console.log(params.row.Patient);
+        return params.row.Patient.FirstName 
+      },
+    },
+    {
+      field: "RightType",
+      headerName: "สิทธิผู้ป่วย",
+      width: 96,
+      valueGetter: (params) => {
+        return params.row.RightType.Typename;
+      },
+    },
+    {
+      field: "Hospital",
+      headerName: "โรงพยาบาล",
+      width: 96,
+      valueGetter: (params) => {
+        return params.row.Hospital.Name;
+      },
+    },
+    {
+      field: "Time",
+      headerName: "เวลาบันทึกข้อมูล",
+      width: 96,
+      valueFormatter: function(params) {
+        return moment(params.value).format("D MMM YYYY");
+      },
+    },
     { field: "Note", headerName: "หมายเหตุ", width: 96 },
-    { field: "Nurse ID", headerName: "เจ้าหน้าที่", width: 96, valueGetter: (params) => { return params.row.Nurse.FirstName + " " + params.row.Nurse.LastName } },
-
+    // { field: "Nurse ID", headerName: "เจ้าหน้าที่", width: 96, valueGetter: (params) => { return params.row.Nurse.FirstName + " " + params.row.Nurse.LastName } },
   ];
 
   // เมื่อมีการ log out ฟังก์ชันนี้จะทำการ clear token ใน local storage และเปลี่ยน path ไปที่หน้า log in
   const logOut = () => {
     localStorage.clear();
     window.location.href = "/login";
-  }
+  };
 
   useEffect(() => {
     getPatientRights();
@@ -177,9 +226,7 @@ function PatientRights() {
             {message}
           </Alert>
         </Snackbar>
-        <Snackbar open={error}
-          autoHideDuration={6000}
-          onClose={handleClose}>
+        <Snackbar open={error} autoHideDuration={6000} onClose={handleClose}>
           <Alert onClose={handleClose} severity="error">
             {message}
           </Alert>
@@ -211,7 +258,7 @@ function PatientRights() {
             </Button>
           </Box>
         </Box>
-        <div style={{ height: 400, width: "100%", marginTop: '20px' }}>
+        <div style={{ height: 400, width: "100%", marginTop: "20px" }}>
           <DataGrid
             rows={patientrights}
             getRowId={(row) => row.ID}
@@ -225,4 +272,3 @@ function PatientRights() {
   );
 }
 export default PatientRights;
-
