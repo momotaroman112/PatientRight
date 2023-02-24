@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import {
   createStyles,
   makeStyles,
-  useTheme,
   Theme,
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -28,18 +27,13 @@ import { createTheme } from '@material-ui/core/styles';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import FaceIcon from '@material-ui/icons/Face';
 import Chip from '@material-ui/core/Chip';
-import HomeIcon from "@material-ui/icons/Home";
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import NoteIcon from '@mui/icons-material/Note';
-import SickIcon from '@mui/icons-material/Sick';
-import MedicationIcon from '@mui/icons-material/Medication';
 import Popover from "@material-ui/core/Popover";
 import SignIn from "./components/SignIn";
 import { EmployeeInterface } from "./models/IEmployee";
-import { RoleInterface } from "./models/IRole";
-import AllInboxIcon from '@material-ui/icons/AllInbox';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import  CreatePatientRight from "./components/PatientRightCreate"
+import Patientright from "./components/PatientRight";
+
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -187,6 +181,7 @@ export default function MiniDrawer() {
   };
 
   const menu = [
+    { name: "รายการสิทธิการรักษา",icon: <NoteIcon/>, path:"/PatientRight" },
     { name: "สร้างสิทธิการรักษา", icon: <NoteIcon />, path: "/CreatePatientRight" },
   ];
 
@@ -325,6 +320,7 @@ export default function MiniDrawer() {
             <div className={classes.toolbar} />
             <div>
               <Routes>
+                <Route path="/PatientRight" element={<Patientright/>} />
                 <Route path="/CreatePatientRight" element={<CreatePatientRight />} />
               </Routes>
             </div>

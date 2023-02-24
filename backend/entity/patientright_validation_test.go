@@ -48,11 +48,17 @@ func TestPatientRightNote(t *testing.T) {
 
 func TestPatientRightTime(t *testing.T) {
 	g := NewGomegaWithT(t)
-
-	patientright := PatientRight {
-		Note:            "wanted",
-		DateRocrcord:	time.Date(2024, 1, 1, 12, 00, 00, 00, time.UTC),
+	kai := []time.Time{
+		time.Now().Add(24 * time.Hour),
+		time.Now().Add(-24 * time.Hour),
 	}
+
+	for _, kais :=range kai{
+		patientright := PatientRight {
+		Note:            "wanted",
+		DateRocrcord:		kais,
+	}
+	
 
 	//ตรวจสอบ govalidator
 	ok, err := govalidator.ValidateStruct(patientright)
@@ -65,6 +71,7 @@ func TestPatientRightTime(t *testing.T) {
 
 	// err.Error ต้องมี error message แสดงออกมา
 	g.Expect(err.Error()).To(Equal("Time must be Now"))
+	}
 }
 
 func TestPatientRightHospitalNotNull(t *testing.T) {

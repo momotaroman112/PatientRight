@@ -70,7 +70,7 @@ type Patient struct {
 type RightType struct {
 	gorm.Model
 	Typename string
-	Discount uint 
+	Discount int 
 	PatientRight  []PatientRight `gorm:"foreignKey:RightTypeID"`
 }
 
@@ -98,7 +98,7 @@ type PatientRight struct {
 	
 	CreditLimit int16  `valid:"int,range(0|500000)~Credit Limit Invalids"`
 
-	DateRocrcord time.Time `valid:"Now~Time must be Now"`
+	DateRocrcord time.Time `valid:"present~Time must be Now"`
 
 	Patient []Patient `gorm:"foreignKey:PatientRightID"`
 }
@@ -152,5 +152,9 @@ func init() {
 	govalidator.CustomTypeTagMap.Set("positivenum", func(i interface{}, context interface{}) bool {
 		num := i
 		return num.(int) > 0
+	})
+	govalidator.CustomTypeTagMap.Set("present", func(i interface{}, context interface{}) bool {
+		t := i.(time.Time)
+		return t.After(time.Now().Add(time.Hour*-12)) && t.Before(time.Now().Add(time.Hour*12))
 	})
 }

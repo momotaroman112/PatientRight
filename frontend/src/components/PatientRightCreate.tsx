@@ -192,12 +192,11 @@ function CreatePatientRight() {
       EmployeeID : convertType(nurse?.ID),
       RightTypeID: convertType(patientright.RightTypeID),
       HospitalID: convertType(patientright.HospitalID),
-      SendingTime: SendingTime,
+      DateRocrcord: SendingTime,
       Note: patientright.Note ?? "",
       };
-    console.log(data)
-
-    const requestOptionsPost = {
+      console.log(data)
+      const requestOptionsPost = {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -220,7 +219,7 @@ function CreatePatientRight() {
           if(res.error.includes("Note cannot be blank")){
             setErrorMessage("กรุณากรอกหมายเหตุการใช้สิทธิ")
           }
-          else if(res.error.includes("Time must be future")){
+          else if(res.error.includes("Time must be Now")){
             setErrorMessage("กรุณาเลือกเวลาที่เป็นปัจจุบัน")
           }
           else{
@@ -228,8 +227,10 @@ function CreatePatientRight() {
           }
         }
       });
+    }
+
+    
   }
-}
 
   // function clear form after submit success
   const ClearForm = () => {
@@ -345,7 +346,7 @@ function CreatePatientRight() {
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <p style={{color:"#006A7D",fontSize: "10"}}>วันที่และเวลานัดหมาย</p>
+              <p style={{color:"#006A7D",fontSize: "10"}}>วันที่และเวลาที่ทำการบันทึก</p>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <KeyboardDateTimePicker
                   name="SendingTime"
